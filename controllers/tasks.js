@@ -1,8 +1,11 @@
 const Task = require ('../models/Task.js');
+const {createCustomError} = require ('../errors/custom-error.js');
 const getAllTasks = async (req, res) => {
   try {
     const tasks = await Task.find ({});
-    res.status (200).json ({tasks});
+    res
+      .status (200)
+      .json ({success: true, data: {tasks, numOfHits: tasks.length}});
   } catch (error) {
     res.status (500).json ({message: error});
   }
@@ -20,7 +23,14 @@ const getTask = async (req, res) => {
     const {id: taskId} = req.params;
     const task = await Task.findOne ({_id: taskId});
     if (!task) {
-      res.status (404).json ({message: `No such task ${taskId}`});
+      //  return res.status (404).json ({message: `No such task ${taskId}`});
+      //another refactor way
+      //
+      // const error = new Error ('Not Found');
+      // error.status = 404;
+      // return next (error);
+      //another refactor way
+      return next(createCustomError(`No Task with Id ${taskId}`,404));
     }
     res.status (200).json ({task});
   } catch (error) {
